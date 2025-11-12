@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
+import { TrendingUp, TrendingDown, Wallet, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Plus, TrendingUp, TrendingDown, Wallet, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { TransactionDialog } from "@/components/TransactionDialog";
+import { useTransactions } from "@/hooks/useTransactions";
 
 const Dashboard = () => {
   const [selectedMonth] = useState(new Date().toLocaleDateString("it-IT", { month: "long", year: "numeric" }));
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const { transactions } = useTransactions();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -86,27 +89,29 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-8 flex gap-4">
-          <Button className="bg-success hover:bg-success/90">
-            <Plus className="mr-2 h-4 w-4" />
-            Nuova Entrata
-          </Button>
-          <Button className="bg-warning hover:bg-warning/90">
-            <Plus className="mr-2 h-4 w-4" />
-            Nuova Uscita
-          </Button>
+        <div className="mt-8 flex flex-wrap gap-4">
+          <TransactionDialog type="income" variant="income" />
+          <TransactionDialog type="expense" variant="expense" />
         </div>
 
         {/* Transactions List */}
         <Card className="mt-8 bg-card p-6 shadow-card">
           <h2 className="mb-4 text-xl font-semibold">Transazioni Recenti</h2>
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Wallet className="mb-4 h-12 w-12 text-muted-foreground/50" />
-            <p className="text-muted-foreground">Nessuna transazione ancora</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Inizia aggiungendo la tua prima entrata o uscita
-            </p>
-          </div>
+          {transactions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Wallet className="mb-4 h-12 w-12 text-muted-foreground/50" />
+              <p className="text-muted-foreground">Nessuna transazione ancora</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Inizia aggiungendo la tua prima entrata o uscita
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                {transactions.length} transazion{transactions.length === 1 ? "e" : "i"}
+              </p>
+            </div>
+          )}
         </Card>
 
         {/* Charts Placeholder */}
