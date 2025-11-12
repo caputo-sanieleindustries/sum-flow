@@ -25,7 +25,7 @@ import { useTransactions } from "@/hooks/useTransactions";
 export function BudgetManager() {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
-  const [categoryId, setCategoryId] = useState<string>("");
+  const [categoryId, setCategoryId] = useState<string>("all");
   const [threshold, setThreshold] = useState("80");
   const [month, setMonth] = useState(
     `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`
@@ -39,13 +39,13 @@ export function BudgetManager() {
     try {
       await addBudget({
         month: `${month}-01`,
-        category_id: categoryId || null,
+        category_id: categoryId === "all" ? null : categoryId,
         amount: parseFloat(amount),
         alert_threshold: parseFloat(threshold) / 100,
       });
 
       setAmount("");
-      setCategoryId("");
+      setCategoryId("all");
       setThreshold("80");
       setOpen(false);
     } catch (error) {
@@ -88,7 +88,7 @@ export function BudgetManager() {
                   <SelectValue placeholder="Budget totale (tutte le categorie)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Budget totale</SelectItem>
+                  <SelectItem value="all">Budget totale</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.icon} {category.name}
