@@ -10,6 +10,7 @@ import { MonthlyChart } from "@/components/MonthlyChart";
 import { CategoryChart } from "@/components/CategoryChart";
 import { OnlineStatusBadge } from "@/components/OnlineStatusBadge";
 import { TagManager } from "@/components/TagManager";
+import { ExportTransactions } from "@/components/ExportTransactions";
 import { useTransactions } from "@/hooks/useTransactions";
 
 const Dashboard = () => {
@@ -131,6 +132,7 @@ const Dashboard = () => {
           <TransactionDialog type="income" variant="income" />
           <TransactionDialog type="expense" variant="expense" />
           <TagManager />
+          <ExportTransactions />
         </div>
 
         {/* Transactions List */}
