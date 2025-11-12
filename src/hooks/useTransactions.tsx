@@ -143,8 +143,8 @@ export const useTransactions = () => {
         .insert([{ ...transaction, user_id: user.id }]);
 
       if (error) throw error;
+      // Realtime will handle the update automatically
       toast.success("Transazione aggiunta!");
-      await fetchTransactions();
     } catch (error: any) {
       if (error.message !== "Offline") {
         toast.error(error.message || "Errore nell'aggiunta della transazione");
@@ -166,8 +166,8 @@ export const useTransactions = () => {
         .eq("id", id);
 
       if (error) throw error;
+      // Realtime will handle the update automatically
       toast.success("Transazione aggiornata!");
-      await fetchTransactions();
     } catch (error: any) {
       if (error.message !== "Offline") {
         toast.error(error.message || "Errore nell'aggiornamento della transazione");
@@ -189,8 +189,8 @@ export const useTransactions = () => {
         .eq("id", id);
 
       if (error) throw error;
+      // Realtime will handle the update automatically
       toast.success("Transazione eliminata!");
-      await fetchTransactions();
     } catch (error: any) {
       if (error.message !== "Offline") {
         toast.error(error.message || "Errore nell'eliminazione della transazione");
@@ -199,9 +199,45 @@ export const useTransactions = () => {
     }
   };
 
+  // Initial fetch
   useEffect(() => {
     fetchCategories();
     fetchTransactions();
+  }, []);
+
+  // Realtime subscription for transactions
+  useEffect(() => {
+    const channel = supabase
+      .channel('transactions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions'
+        },
+        (payload) => {
+          console.log('Realtime update:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            setTransactions((prev) => [payload.new as Transaction, ...prev]);
+            toast.success("Nuova transazione ricevuta!");
+          } else if (payload.eventType === 'UPDATE') {
+            setTransactions((prev) =>
+              prev.map((t) => (t.id === payload.new.id ? payload.new as Transaction : t))
+            );
+            toast.info("Transazione aggiornata!");
+          } else if (payload.eventType === 'DELETE') {
+            setTransactions((prev) => prev.filter((t) => t.id !== payload.old.id));
+            toast.info("Transazione eliminata!");
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return {
