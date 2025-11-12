@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Wallet, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,30 @@ const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { transactions } = useTransactions();
+
+  // Calculate totals
+  const { totalIncome, totalExpenses, netBalance } = useMemo(() => {
+    const income = transactions
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
+
+    const expenses = transactions
+      .filter((t) => t.type === "expense")
+      .reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
+
+    return {
+      totalIncome: income,
+      totalExpenses: expenses,
+      netBalance: income - expenses,
+    };
+  }, [transactions]);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("it-IT", {
+      style: "currency",
+      currency: "EUR",
+    }).format(amount);
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -56,7 +80,9 @@ const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Entrate</p>
-                <p className="mt-2 text-3xl font-bold text-success">€0,00</p>
+                <p className="mt-2 text-3xl font-bold text-success">
+                  {formatCurrency(totalIncome)}
+                </p>
               </div>
               <div className="rounded-full bg-success/10 p-3">
                 <TrendingUp className="h-6 w-6 text-success" />
@@ -68,7 +94,9 @@ const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Uscite</p>
-                <p className="mt-2 text-3xl font-bold text-warning">€0,00</p>
+                <p className="mt-2 text-3xl font-bold text-warning">
+                  {formatCurrency(totalExpenses)}
+                </p>
               </div>
               <div className="rounded-full bg-warning/10 p-3">
                 <TrendingDown className="h-6 w-6 text-warning" />
@@ -80,7 +108,9 @@ const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Saldo Netto</p>
-                <p className="mt-2 text-3xl font-bold text-primary">€0,00</p>
+                <p className="mt-2 text-3xl font-bold text-primary">
+                  {formatCurrency(netBalance)}
+                </p>
               </div>
               <div className="rounded-full bg-primary/10 p-3">
                 <Wallet className="h-6 w-6 text-primary" />
