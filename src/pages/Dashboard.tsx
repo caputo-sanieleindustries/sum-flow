@@ -1,18 +1,47 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { Plus, TrendingUp, TrendingDown, Wallet, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [selectedMonth] = useState(new Date().toLocaleDateString("it-IT", { month: "long", year: "numeric" }));
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-lg text-muted-foreground">Caricamento...</div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-gradient-primary px-4 py-8 md:px-8 lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <h1 className="text-3xl font-bold text-white md:text-4xl">Budget Manager</h1>
-          <p className="mt-2 text-white/90">{selectedMonth}</p>
+        <div className="mx-auto flex max-w-7xl items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white md:text-4xl">Budget Manager</h1>
+            <p className="mt-2 text-white/90">{selectedMonth}</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-white/80">{user.email}</span>
+            <Button variant="outline" size="sm" onClick={signOut} className="border-white/20 text-white hover:bg-white/10">
+              <LogOut className="mr-2 h-4 w-4" />
+              Esci
+            </Button>
+          </div>
         </div>
       </header>
 
