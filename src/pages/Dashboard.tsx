@@ -14,6 +14,7 @@ import { ExportTransactions } from "@/components/ExportTransactions";
 import { BudgetManager } from "@/components/BudgetManager";
 import { BudgetProgress } from "@/components/BudgetProgress";
 import { AdvancedStats } from "@/components/AdvancedStats";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTransactions } from "@/hooks/useTransactions";
 
 const Dashboard = () => {
@@ -74,8 +75,9 @@ const Dashboard = () => {
             </div>
             <p className="mt-2 text-muted-foreground">{selectedMonth}</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground">{user.email}</span>
+            <ThemeToggle />
             <Button variant="expense" size="sm" onClick={signOut}>
               <LogOut className="mr-2 h-4 w-4" />
               Esci
