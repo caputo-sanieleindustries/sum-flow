@@ -64,18 +64,18 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-gradient-primary px-4 py-8 md:px-8 lg:px-12">
+      <header className="border-b bg-background px-4 py-6 md:px-8 lg:px-12">
         <div className="mx-auto flex max-w-7xl items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-white md:text-4xl">Budget Manager</h1>
+              <h1 className="text-3xl font-bold text-foreground md:text-4xl">Budget Manager</h1>
               <OnlineStatusBadge isOnline={isOnline} isSyncing={isSyncing} />
             </div>
-            <p className="mt-2 text-white/90">{selectedMonth}</p>
+            <p className="mt-2 text-muted-foreground">{selectedMonth}</p>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-white/80">{user.email}</span>
-            <Button variant="outline" size="sm" onClick={signOut} className="border-white/20 text-white hover:bg-white/10">
+            <span className="text-sm text-muted-foreground">{user.email}</span>
+            <Button variant="expense" size="sm" onClick={signOut}>
               <LogOut className="mr-2 h-4 w-4" />
               Esci
             </Button>
@@ -86,44 +86,44 @@ const Dashboard = () => {
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-8 lg:px-12">
         {/* Summary Cards */}
         <div className="grid gap-6 md:grid-cols-3">
-          <Card className="bg-gradient-card p-6 shadow-card">
+          <Card className="border bg-card p-6 shadow-card">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Entrate</p>
-                <p className="mt-2 text-3xl font-bold text-success">
+                <p className="mt-2 text-3xl font-bold text-income">
                   {formatCurrency(totalIncome)}
                 </p>
               </div>
-              <div className="rounded-full bg-success/10 p-3">
-                <TrendingUp className="h-6 w-6 text-success" />
+              <div className="rounded-full bg-income/10 p-3">
+                <TrendingUp className="h-6 w-6 text-income" />
               </div>
             </div>
           </Card>
 
-          <Card className="bg-gradient-card p-6 shadow-card">
+          <Card className="border bg-card p-6 shadow-card">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Uscite</p>
-                <p className="mt-2 text-3xl font-bold text-warning">
+                <p className="mt-2 text-3xl font-bold text-expense">
                   {formatCurrency(totalExpenses)}
                 </p>
               </div>
-              <div className="rounded-full bg-warning/10 p-3">
-                <TrendingDown className="h-6 w-6 text-warning" />
+              <div className="rounded-full bg-expense/10 p-3">
+                <TrendingDown className="h-6 w-6 text-expense" />
               </div>
             </div>
           </Card>
 
-          <Card className="bg-gradient-card p-6 shadow-card">
+          <Card className="border bg-card p-6 shadow-card">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Saldo Netto</p>
-                <p className="mt-2 text-3xl font-bold text-primary">
+                <p className="mt-2 text-3xl font-bold text-foreground">
                   {formatCurrency(netBalance)}
                 </p>
               </div>
-              <div className="rounded-full bg-primary/10 p-3">
-                <Wallet className="h-6 w-6 text-primary" />
+              <div className="rounded-full bg-muted p-3">
+                <Wallet className="h-6 w-6 text-foreground" />
               </div>
             </div>
           </Card>
