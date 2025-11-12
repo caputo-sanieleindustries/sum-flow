@@ -128,6 +128,22 @@ export const useTransactions = () => {
     }
   }, [isOnline]);
 
+  const notifyN8n = async (event: "created" | "updated" | "deleted", transaction: any) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.functions.invoke("notify-n8n", {
+        body: {
+          event,
+          transaction,
+          user_email: user?.email,
+        },
+      });
+    } catch (error) {
+      console.error("Error notifying n8n:", error);
+      // Don't throw - n8n notification failures shouldn't block the main flow
+    }
+  };
+
   const addTransaction = async (transaction: Omit<Transaction, "id" | "user_id" | "created_at" | "updated_at">) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -138,11 +154,19 @@ export const useTransactions = () => {
         throw new Error("Offline");
       }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("transactions")
-        .insert([{ ...transaction, user_id: user.id }]);
+        .insert([{ ...transaction, user_id: user.id }])
+        .select()
+        .single();
 
       if (error) throw error;
+      
+      // Notify n8n
+      if (data) {
+        notifyN8n("created", data);
+      }
+      
       // Realtime will handle the update automatically
       toast.success("Transazione aggiunta!");
     } catch (error: any) {
@@ -160,12 +184,20 @@ export const useTransactions = () => {
         throw new Error("Offline");
       }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("transactions")
         .update(transaction)
-        .eq("id", id);
+        .eq("id", id)
+        .select()
+        .single();
 
       if (error) throw error;
+      
+      // Notify n8n
+      if (data) {
+        notifyN8n("updated", data);
+      }
+      
       // Realtime will handle the update automatically
       toast.success("Transazione aggiornata!");
     } catch (error: any) {
@@ -183,12 +215,20 @@ export const useTransactions = () => {
         throw new Error("Offline");
       }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("transactions")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .select()
+        .single();
 
       if (error) throw error;
+      
+      // Notify n8n
+      if (data) {
+        notifyN8n("deleted", data);
+      }
+      
       // Realtime will handle the update automatically
       toast.success("Transazione eliminata!");
     } catch (error: any) {
