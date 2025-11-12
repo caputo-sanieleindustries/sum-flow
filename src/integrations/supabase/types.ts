@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      budgets: {
+        Row: {
+          alert_sent: boolean | null
+          alert_threshold: number | null
+          amount: number
+          category_id: string | null
+          created_at: string | null
+          id: string
+          month: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_sent?: boolean | null
+          alert_threshold?: number | null
+          amount: number
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          month: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_sent?: boolean | null
+          alert_threshold?: number | null
+          amount?: number
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          month?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budgets_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           color: string | null
