@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -37,6 +37,8 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Transaction, useTransactions } from "@/hooks/useTransactions";
+import { TagSelector } from "@/components/TagSelector";
+import { useTags } from "@/hooks/useTags";
 
 const transactionSchema = z.object({
   amount: z.string().min(1, "L'importo è obbligatorio").refine(
@@ -63,6 +65,8 @@ export function EditTransactionDialog({
   onOpenChange,
 }: EditTransactionDialogProps) {
   const { updateTransaction, categories, loading } = useTransactions();
+  const { setTransactionTags } = useTags();
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
@@ -98,6 +102,10 @@ export function EditTransactionDialog({
         date: format(data.date, "yyyy-MM-dd"),
         note: data.note || null,
       });
+      
+      // Update tags
+      await setTransactionTags(transaction.id, selectedTagIds);
+      
       onOpenChange(false);
     } catch (error) {
       console.error("Errore nell'aggiornamento della transazione:", error);
@@ -247,6 +255,15 @@ export function EditTransactionDialog({
                 </FormItem>
               )}
             />
+
+            <div>
+              <FormLabel>Tag (opzionali)</FormLabel>
+              <TagSelector
+                selectedTagIds={selectedTagIds}
+                onTagsChange={setSelectedTagIds}
+                transactionId={transaction?.id}
+              />
+            </div>
 
             <div className="flex gap-3 pt-2">
               <Button

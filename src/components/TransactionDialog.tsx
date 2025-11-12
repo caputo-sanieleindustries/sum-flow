@@ -38,6 +38,8 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useTransactions, TransactionType } from "@/hooks/useTransactions";
+import { TagSelector } from "@/components/TagSelector";
+import { useTags } from "@/hooks/useTags";
 
 const transactionSchema = z.object({
   amount: z.string().min(1, "L'importo è obbligatorio").refine(
@@ -64,6 +66,8 @@ interface TransactionDialogProps {
 export function TransactionDialog({ type, variant }: TransactionDialogProps) {
   const [open, setOpen] = useState(false);
   const { addTransaction, categories, loading } = useTransactions();
+  const { setTransactionTags } = useTags();
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
@@ -78,13 +82,19 @@ export function TransactionDialog({ type, variant }: TransactionDialogProps) {
 
   const onSubmit = async (data: TransactionFormValues) => {
     try {
-      await addTransaction({
+      const newTransaction = await addTransaction({
         amount: parseFloat(data.amount),
         type: data.type,
         category_id: data.category_id,
         date: format(data.date, "yyyy-MM-dd"),
         note: data.note || null,
       });
+      
+      // Add tags if any selected
+      if (newTransaction && selectedTagIds.length > 0) {
+        await setTransactionTags(newTransaction.id, selectedTagIds);
+      }
+      
       form.reset({
         amount: "",
         type: type || "income",
@@ -92,6 +102,7 @@ export function TransactionDialog({ type, variant }: TransactionDialogProps) {
         date: new Date(),
         note: "",
       });
+      setSelectedTagIds([]);
       setOpen(false);
     } catch (error) {
       console.error("Errore nell'aggiunta della transazione:", error);
@@ -254,6 +265,14 @@ export function TransactionDialog({ type, variant }: TransactionDialogProps) {
                 </FormItem>
               )}
             />
+
+            <div>
+              <FormLabel>Tag (opzionali)</FormLabel>
+              <TagSelector
+                selectedTagIds={selectedTagIds}
+                onTagsChange={setSelectedTagIds}
+              />
+            </div>
 
             <div className="flex gap-3 pt-2">
               <Button

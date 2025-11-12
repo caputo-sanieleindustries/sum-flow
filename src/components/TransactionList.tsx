@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -21,15 +22,20 @@ import {
 import { TransactionCard } from "@/components/TransactionCard";
 import { EditTransactionDialog } from "@/components/EditTransactionDialog";
 import { useTransactions, Transaction, TransactionType } from "@/hooks/useTransactions";
-import { Wallet } from "lucide-react";
+import { useTags } from "@/hooks/useTags";
+import { Wallet, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function TransactionList() {
   const { transactions, categories, deleteTransaction } = useTransactions();
+  const { tags, getTransactionTags } = useTags();
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<string>("all");
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [transactionTagsMap, setTransactionTagsMap] = useState<Record<string, string[]>>({});
 
   // Generate list of available months from transactions
   const availableMonths = useMemo(() => {
@@ -40,6 +46,21 @@ export function TransactionList() {
       months.add(monthKey);
     });
     return Array.from(months).sort().reverse();
+  }, [transactions]);
+
+  // Load tags for all transactions
+  useMemo(() => {
+    const loadTags = async () => {
+      const tagsMap: Record<string, string[]> = {};
+      await Promise.all(
+        transactions.map(async (transaction) => {
+          const transactionTags = await getTransactionTags(transaction.id);
+          tagsMap[transaction.id] = transactionTags.map(t => t.id);
+        })
+      );
+      setTransactionTagsMap(tagsMap);
+    };
+    loadTags();
   }, [transactions]);
 
   // Filter transactions
@@ -62,9 +83,16 @@ export function TransactionList() {
         return false;
       }
 
+      // Filter by tags
+      if (selectedTagIds.length > 0) {
+        const transactionTags = transactionTagsMap[transaction.id] || [];
+        const hasSelectedTag = selectedTagIds.some(tagId => transactionTags.includes(tagId));
+        if (!hasSelectedTag) return false;
+      }
+
       return true;
     });
-  }, [transactions, selectedMonth, selectedCategory, selectedType]);
+  }, [transactions, selectedMonth, selectedCategory, selectedType, selectedTagIds, transactionTagsMap]);
 
   const handleDelete = async () => {
     if (!deletingId) return;
@@ -88,7 +116,8 @@ export function TransactionList() {
         <h2 className="mb-6 text-xl font-semibold">Transazioni</h2>
 
         {/* Filters */}
-        <div className="mb-6 grid gap-4 md:grid-cols-3">
+        <div className="mb-6 space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
           <div>
             <Label htmlFor="month-filter" className="mb-2 block">
               Mese
@@ -145,6 +174,41 @@ export function TransactionList() {
               </SelectContent>
             </Select>
           </div>
+          </div>
+
+          {/* Tag filter */}
+          {tags.length > 0 && (
+            <div>
+              <Label className="mb-2 block">Filtra per tag</Label>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => {
+                  const isSelected = selectedTagIds.includes(tag.id);
+                  return (
+                    <Badge
+                      key={tag.id}
+                      style={{
+                        backgroundColor: isSelected ? tag.color : "transparent",
+                        color: isSelected ? "#fff" : tag.color,
+                        borderColor: tag.color,
+                        cursor: "pointer"
+                      }}
+                      className="border-2 transition-all hover:scale-105"
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedTagIds(selectedTagIds.filter(id => id !== tag.id));
+                        } else {
+                          setSelectedTagIds([...selectedTagIds, tag.id]);
+                        }
+                      }}
+                    >
+                      {tag.name}
+                      {isSelected && <X className="ml-1 h-3 w-3" />}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Transaction list */}
@@ -167,7 +231,7 @@ export function TransactionList() {
             <p className="mb-4 text-sm text-muted-foreground">
               {filteredTransactions.length} transazion
               {filteredTransactions.length === 1 ? "e" : "i"}
-              {selectedMonth !== "all" || selectedCategory !== "all" || selectedType !== "all"
+              {selectedMonth !== "all" || selectedCategory !== "all" || selectedType !== "all" || selectedTagIds.length > 0
                 ? " (filtrate)"
                 : ""}
             </p>

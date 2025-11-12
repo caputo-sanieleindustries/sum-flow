@@ -9,6 +9,7 @@ import { TransactionList } from "@/components/TransactionList";
 import { MonthlyChart } from "@/components/MonthlyChart";
 import { CategoryChart } from "@/components/CategoryChart";
 import { OnlineStatusBadge } from "@/components/OnlineStatusBadge";
+import { TagManager } from "@/components/TagManager";
 import { useTransactions } from "@/hooks/useTransactions";
 
 const Dashboard = () => {
@@ -129,6 +130,7 @@ const Dashboard = () => {
         <div className="mt-8 flex flex-wrap gap-4">
           <TransactionDialog type="income" variant="income" />
           <TransactionDialog type="expense" variant="expense" />
+          <TagManager />
         </div>
 
         {/* Transactions List */}

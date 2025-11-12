@@ -169,6 +169,7 @@ export const useTransactions = () => {
       
       // Realtime will handle the update automatically
       toast.success("Transazione aggiunta!");
+      return data;
     } catch (error: any) {
       if (error.message !== "Offline") {
         toast.error(error.message || "Errore nell'aggiunta della transazione");

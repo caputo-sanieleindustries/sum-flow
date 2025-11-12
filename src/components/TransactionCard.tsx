@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { Pencil, Trash2 } from "lucide-react";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Transaction, Category } from "@/hooks/useTransactions";
 import { cn } from "@/lib/utils";
+import { useTags, Tag } from "@/hooks/useTags";
 
 interface TransactionCardProps {
   transaction: Transaction;
@@ -15,6 +17,13 @@ interface TransactionCardProps {
 }
 
 export function TransactionCard({ transaction, category, onEdit, onDelete }: TransactionCardProps) {
+  const { getTransactionTags } = useTags();
+  const [tags, setTags] = useState<Tag[]>([]);
+  
+  useEffect(() => {
+    getTransactionTags(transaction.id).then(setTags);
+  }, [transaction.id]);
+  
   const isIncome = transaction.type === "income";
   const formattedDate = format(new Date(transaction.date), "d MMMM yyyy", { locale: it });
   const formattedAmount = new Intl.NumberFormat("it-IT", {
@@ -53,9 +62,23 @@ export function TransactionCard({ transaction, category, onEdit, onDelete }: Tra
             <p className="text-sm text-muted-foreground mb-2">{formattedDate}</p>
             
             {transaction.note && (
-              <p className="text-sm text-muted-foreground italic line-clamp-2">
+              <p className="text-sm text-muted-foreground italic line-clamp-2 mb-2">
                 {transaction.note}
               </p>
+            )}
+            
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {tags.map((tag) => (
+                  <Badge
+                    key={tag.id}
+                    style={{ backgroundColor: tag.color, color: "#fff" }}
+                    className="text-xs"
+                  >
+                    {tag.name}
+                  </Badge>
+                ))}
+              </div>
             )}
           </div>
         </div>
