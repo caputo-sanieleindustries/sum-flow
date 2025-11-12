@@ -6,13 +6,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { TransactionDialog } from "@/components/TransactionDialog";
 import { TransactionList } from "@/components/TransactionList";
+import { MonthlyChart } from "@/components/MonthlyChart";
+import { CategoryChart } from "@/components/CategoryChart";
 import { useTransactions } from "@/hooks/useTransactions";
 
 const Dashboard = () => {
   const [selectedMonth] = useState(new Date().toLocaleDateString("it-IT", { month: "long", year: "numeric" }));
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
-  const { transactions } = useTransactions();
+  const { transactions, categories } = useTransactions();
 
   // Calculate totals
   const { totalIncome, totalExpenses, netBalance } = useMemo(() => {
@@ -130,21 +132,10 @@ const Dashboard = () => {
           <TransactionList />
         </div>
 
-        {/* Charts Placeholder */}
+        {/* Charts */}
         <div className="mt-8 grid gap-6 md:grid-cols-2">
-          <Card className="bg-card p-6 shadow-card">
-            <h3 className="mb-4 text-lg font-semibold">Andamento Mensile</h3>
-            <div className="flex h-64 items-center justify-center rounded-lg bg-muted/30">
-              <p className="text-sm text-muted-foreground">Grafico disponibile con dati</p>
-            </div>
-          </Card>
-
-          <Card className="bg-card p-6 shadow-card">
-            <h3 className="mb-4 text-lg font-semibold">Spese per Categoria</h3>
-            <div className="flex h-64 items-center justify-center rounded-lg bg-muted/30">
-              <p className="text-sm text-muted-foreground">Grafico disponibile con dati</p>
-            </div>
-          </Card>
+          <MonthlyChart transactions={transactions} />
+          <CategoryChart transactions={transactions} categories={categories} />
         </div>
       </main>
     </div>
