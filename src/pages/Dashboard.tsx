@@ -8,13 +8,14 @@ import { TransactionDialog } from "@/components/TransactionDialog";
 import { TransactionList } from "@/components/TransactionList";
 import { MonthlyChart } from "@/components/MonthlyChart";
 import { CategoryChart } from "@/components/CategoryChart";
+import { OnlineStatusBadge } from "@/components/OnlineStatusBadge";
 import { useTransactions } from "@/hooks/useTransactions";
 
 const Dashboard = () => {
   const [selectedMonth] = useState(new Date().toLocaleDateString("it-IT", { month: "long", year: "numeric" }));
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
-  const { transactions, categories } = useTransactions();
+  const { transactions, categories, isOnline, isSyncing } = useTransactions();
 
   // Calculate totals
   const { totalIncome, totalExpenses, netBalance } = useMemo(() => {
@@ -62,7 +63,10 @@ const Dashboard = () => {
       <header className="bg-gradient-primary px-4 py-8 md:px-8 lg:px-12">
         <div className="mx-auto flex max-w-7xl items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white md:text-4xl">Budget Manager</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-white md:text-4xl">Budget Manager</h1>
+              <OnlineStatusBadge isOnline={isOnline} isSyncing={isSyncing} />
+            </div>
             <p className="mt-2 text-white/90">{selectedMonth}</p>
           </div>
           <div className="flex items-center gap-4">
