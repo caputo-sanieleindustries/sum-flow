@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { TransactionDialog } from "@/components/TransactionDialog";
+import { TransactionList } from "@/components/TransactionList";
 import { useTransactions } from "@/hooks/useTransactions";
 
 const Dashboard = () => {
@@ -95,24 +96,9 @@ const Dashboard = () => {
         </div>
 
         {/* Transactions List */}
-        <Card className="mt-8 bg-card p-6 shadow-card">
-          <h2 className="mb-4 text-xl font-semibold">Transazioni Recenti</h2>
-          {transactions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Wallet className="mb-4 h-12 w-12 text-muted-foreground/50" />
-              <p className="text-muted-foreground">Nessuna transazione ancora</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Inizia aggiungendo la tua prima entrata o uscita
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                {transactions.length} transazion{transactions.length === 1 ? "e" : "i"}
-              </p>
-            </div>
-          )}
-        </Card>
+        <div className="mt-8">
+          <TransactionList />
+        </div>
 
         {/* Charts Placeholder */}
         <div className="mt-8 grid gap-6 md:grid-cols-2">
