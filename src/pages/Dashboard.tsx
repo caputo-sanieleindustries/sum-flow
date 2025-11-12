@@ -13,6 +13,7 @@ import { TagManager } from "@/components/TagManager";
 import { ExportTransactions } from "@/components/ExportTransactions";
 import { BudgetManager } from "@/components/BudgetManager";
 import { BudgetProgress } from "@/components/BudgetProgress";
+import { AdvancedStats } from "@/components/AdvancedStats";
 import { useTransactions } from "@/hooks/useTransactions";
 
 const Dashboard = () => {
@@ -141,6 +142,11 @@ const Dashboard = () => {
         {/* Budget Progress */}
         <div className="mt-8">
           <BudgetProgress />
+        </div>
+
+        {/* Advanced Stats */}
+        <div className="mt-8">
+          <AdvancedStats />
         </div>
 
         {/* Transactions List */}
