@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Wallet } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -102,13 +102,15 @@ const Auth = () => {
               >
                 {isLoading ? "Accesso in corso..." : "Accedi"}
               </Button>
-              <Button
-                type="button"
-                variant="link"
-                className="w-full text-sm text-muted-foreground"
-              >
-                Password dimenticata?
-              </Button>
+              <Link to="/forgot-password" className="block">
+                <Button
+                  type="button"
+                  variant="link"
+                  className="w-full text-sm text-muted-foreground"
+                >
+                  Password dimenticata?
+                </Button>
+              </Link>
             </form>
           </TabsContent>
 
