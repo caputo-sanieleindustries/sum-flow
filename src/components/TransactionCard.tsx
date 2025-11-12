@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { Pencil, Trash2 } from "lucide-react";
@@ -7,22 +6,26 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Transaction, Category } from "@/hooks/useTransactions";
 import { cn } from "@/lib/utils";
-import { useTags, Tag } from "@/hooks/useTags";
+import { Tag } from "@/hooks/useTags";
+import { HighlightedText } from "@/components/HighlightedText";
 
 interface TransactionCardProps {
   transaction: Transaction;
   category: Category | undefined;
   onEdit: (transaction: Transaction) => void;
   onDelete: (id: string) => void;
+  searchTerm?: string;
+  transactionTags?: Tag[];
 }
 
-export function TransactionCard({ transaction, category, onEdit, onDelete }: TransactionCardProps) {
-  const { getTransactionTags } = useTags();
-  const [tags, setTags] = useState<Tag[]>([]);
-  
-  useEffect(() => {
-    getTransactionTags(transaction.id).then(setTags);
-  }, [transaction.id]);
+export function TransactionCard({ 
+  transaction, 
+  category, 
+  onEdit, 
+  onDelete, 
+  searchTerm = "",
+  transactionTags = []
+}: TransactionCardProps) {
   
   const isIncome = transaction.type === "income";
   const formattedDate = format(new Date(transaction.date), "d MMMM yyyy", { locale: it });
@@ -46,7 +49,12 @@ export function TransactionCard({ transaction, category, onEdit, onDelete }: Tra
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-foreground">{category?.name || "Altro"}</h3>
+              <h3 className="font-semibold text-foreground">
+                <HighlightedText 
+                  text={category?.name || "Altro"} 
+                  searchTerm={searchTerm}
+                />
+              </h3>
               <Badge
                 variant={isIncome ? "default" : "destructive"}
                 className={cn(
@@ -63,19 +71,25 @@ export function TransactionCard({ transaction, category, onEdit, onDelete }: Tra
             
             {transaction.note && (
               <p className="text-sm text-muted-foreground italic line-clamp-2 mb-2">
-                {transaction.note}
+                <HighlightedText 
+                  text={transaction.note} 
+                  searchTerm={searchTerm}
+                />
               </p>
             )}
             
-            {tags.length > 0 && (
+            {transactionTags.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
-                {tags.map((tag) => (
+                {transactionTags.map((tag) => (
                   <Badge
                     key={tag.id}
                     style={{ backgroundColor: tag.color, color: "#fff" }}
                     className="text-xs"
                   >
-                    {tag.name}
+                    <HighlightedText 
+                      text={tag.name} 
+                      searchTerm={searchTerm}
+                    />
                   </Badge>
                 ))}
               </div>
@@ -90,7 +104,11 @@ export function TransactionCard({ transaction, category, onEdit, onDelete }: Tra
               isIncome ? "text-success" : "text-warning"
             )}
           >
-            {isIncome ? "+" : "-"}{formattedAmount}
+            {isIncome ? "+" : "-"}
+            <HighlightedText 
+              text={formattedAmount} 
+              searchTerm={searchTerm}
+            />
           </p>
           
           <div className="flex gap-1">

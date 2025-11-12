@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -23,8 +24,9 @@ import { TransactionCard } from "@/components/TransactionCard";
 import { EditTransactionDialog } from "@/components/EditTransactionDialog";
 import { useTransactions, Transaction, TransactionType } from "@/hooks/useTransactions";
 import { useTags } from "@/hooks/useTags";
-import { Wallet, X } from "lucide-react";
+import { Wallet, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HighlightedText } from "@/components/HighlightedText";
 
 export function TransactionList() {
   const { transactions, categories, deleteTransaction } = useTransactions();
@@ -33,6 +35,7 @@ export function TransactionList() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [transactionTagsMap, setTransactionTagsMap] = useState<Record<string, string[]>>({});
@@ -90,9 +93,26 @@ export function TransactionList() {
         if (!hasSelectedTag) return false;
       }
 
+      // Filter by search term
+      if (searchTerm.trim()) {
+        const term = searchTerm.toLowerCase();
+        const category = categories.find(c => c.id === transaction.category_id);
+        const transactionTagIds = transactionTagsMap[transaction.id] || [];
+        const transactionTags = tags.filter(t => transactionTagIds.includes(t.id));
+        
+        const matchesNote = transaction.note?.toLowerCase().includes(term);
+        const matchesAmount = transaction.amount.toString().includes(term);
+        const matchesCategory = category?.name.toLowerCase().includes(term);
+        const matchesTags = transactionTags.some(tag => tag.name.toLowerCase().includes(term));
+        
+        if (!matchesNote && !matchesAmount && !matchesCategory && !matchesTags) {
+          return false;
+        }
+      }
+
       return true;
     });
-  }, [transactions, selectedMonth, selectedCategory, selectedType, selectedTagIds, transactionTagsMap]);
+  }, [transactions, selectedMonth, selectedCategory, selectedType, selectedTagIds, searchTerm, transactionTagsMap, categories, tags]);
 
   const handleDelete = async () => {
     if (!deletingId) return;
@@ -114,6 +134,30 @@ export function TransactionList() {
     <>
       <Card className="bg-card p-6 shadow-card">
         <h2 className="mb-6 text-xl font-semibold">Transazioni</h2>
+
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Cerca per nota, categoria, importo o tag..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+            {searchTerm && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1/2 h-7 -translate-y-1/2"
+                onClick={() => setSearchTerm("")}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
 
         {/* Filters */}
         <div className="mb-6 space-y-4">
@@ -231,12 +275,15 @@ export function TransactionList() {
             <p className="mb-4 text-sm text-muted-foreground">
               {filteredTransactions.length} transazion
               {filteredTransactions.length === 1 ? "e" : "i"}
-              {selectedMonth !== "all" || selectedCategory !== "all" || selectedType !== "all" || selectedTagIds.length > 0
+              {selectedMonth !== "all" || selectedCategory !== "all" || selectedType !== "all" || selectedTagIds.length > 0 || searchTerm.trim()
                 ? " (filtrate)"
                 : ""}
             </p>
             {filteredTransactions.map((transaction) => {
               const category = categories.find((c) => c.id === transaction.category_id);
+              const transactionTagIds = transactionTagsMap[transaction.id] || [];
+              const transactionTags = tags.filter(t => transactionTagIds.includes(t.id));
+              
               return (
                 <TransactionCard
                   key={transaction.id}
@@ -244,6 +291,8 @@ export function TransactionList() {
                   category={category}
                   onEdit={setEditingTransaction}
                   onDelete={setDeletingId}
+                  searchTerm={searchTerm}
+                  transactionTags={transactionTags}
                 />
               );
             })}
