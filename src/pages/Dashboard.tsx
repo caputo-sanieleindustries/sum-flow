@@ -15,6 +15,7 @@ import { BudgetManager } from "@/components/BudgetManager";
 import { BudgetProgress } from "@/components/BudgetProgress";
 import { AdvancedStats } from "@/components/AdvancedStats";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { CategoryManager } from "@/components/CategoryManager";
 import { useTransactions } from "@/hooks/useTransactions";
 
 const Dashboard = () => {
@@ -149,6 +150,11 @@ const Dashboard = () => {
         {/* Advanced Stats */}
         <div className="mt-8">
           <AdvancedStats />
+        </div>
+
+        {/* Category Manager */}
+        <div className="mt-8">
+          <CategoryManager />
         </div>
 
         {/* Transactions List */}
