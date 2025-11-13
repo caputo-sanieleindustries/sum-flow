@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Paperclip } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { Transaction, Category } from "@/hooks/useTransactions";
 import { cn } from "@/lib/utils";
 import { Tag } from "@/hooks/useTags";
 import { HighlightedText } from "@/components/HighlightedText";
+import { useReceipts } from "@/hooks/useReceipts";
 
 interface TransactionCardProps {
   transaction: Transaction;
@@ -26,6 +28,16 @@ export function TransactionCard({
   searchTerm = "",
   transactionTags = []
 }: TransactionCardProps) {
+  const [receiptCount, setReceiptCount] = useState(0);
+  const { getReceipts } = useReceipts();
+  
+  useEffect(() => {
+    const loadReceipts = async () => {
+      const receipts = await getReceipts(transaction.id);
+      setReceiptCount(receipts.length);
+    };
+    loadReceipts();
+  }, [transaction.id]);
   
   const isIncome = transaction.type === "income";
   const formattedDate = format(new Date(transaction.date), "d MMMM yyyy", { locale: it });
@@ -92,6 +104,13 @@ export function TransactionCard({
                     />
                   </Badge>
                 ))}
+              </div>
+            )}
+            
+            {receiptCount > 0 && (
+              <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                <Paperclip className="h-3 w-3" />
+                <span>{receiptCount} {receiptCount === 1 ? 'ricevuta' : 'ricevute'}</span>
               </div>
             )}
           </div>

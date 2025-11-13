@@ -40,6 +40,8 @@ import { cn } from "@/lib/utils";
 import { useTransactions, TransactionType } from "@/hooks/useTransactions";
 import { TagSelector } from "@/components/TagSelector";
 import { useTags } from "@/hooks/useTags";
+import { ReceiptUpload } from "@/components/ReceiptUpload";
+import { useReceipts } from "@/hooks/useReceipts";
 
 const transactionSchema = z.object({
   amount: z.string().min(1, "L'importo è obbligatorio").refine(
@@ -68,6 +70,8 @@ export function TransactionDialog({ type, variant }: TransactionDialogProps) {
   const { addTransaction, categories, loading } = useTransactions();
   const { setTransactionTags } = useTags();
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { uploadReceipt, uploading } = useReceipts();
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
@@ -90,9 +94,16 @@ export function TransactionDialog({ type, variant }: TransactionDialogProps) {
         note: data.note || null,
       });
       
+      if (!newTransaction) return;
+      
       // Add tags if any selected
-      if (newTransaction && selectedTagIds.length > 0) {
+      if (selectedTagIds.length > 0) {
         await setTransactionTags(newTransaction.id, selectedTagIds);
+      }
+      
+      // Upload receipt if selected
+      if (selectedFile) {
+        await uploadReceipt(newTransaction.id, selectedFile);
       }
       
       form.reset({
@@ -103,6 +114,7 @@ export function TransactionDialog({ type, variant }: TransactionDialogProps) {
         note: "",
       });
       setSelectedTagIds([]);
+      setSelectedFile(null);
       setOpen(false);
     } catch (error) {
       console.error("Errore nell'aggiunta della transazione:", error);
@@ -274,6 +286,16 @@ export function TransactionDialog({ type, variant }: TransactionDialogProps) {
               />
             </div>
 
+            <div>
+              <FormLabel>Ricevuta (opzionale)</FormLabel>
+              <ReceiptUpload
+                onFileSelect={setSelectedFile}
+                selectedFile={selectedFile}
+                onRemove={() => setSelectedFile(null)}
+                uploading={uploading}
+              />
+            </div>
+
             <div className="flex gap-3 pt-2">
               <Button
                 type="button"
@@ -285,7 +307,7 @@ export function TransactionDialog({ type, variant }: TransactionDialogProps) {
               </Button>
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || uploading}
                 className={cn(
                   "flex-1",
                   selectedType === "income" && "bg-success hover:bg-success/90",
